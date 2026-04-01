@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="tclaw-bg" x1="0" y1="0" x2="512" y2="512">
+      <stop offset="0" stop-color="#12122a"/>
+      <stop offset="1" stop-color="#1e2450"/>
+    </linearGradient>
+    <linearGradient id="tclaw-metal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c8d8ff"/>
+      <stop offset="1" stop-color="#5c7ee5"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="116" ry="116" fill="url(#tclaw-bg)"/>
+  <g fill="url(#tclaw-metal)" stroke="#7b9dff" stroke-width="8" stroke-linejoin="round">
+    <path d="M148 168 C 98 248 108 348 188 388 L 220 320 C 168 292 158 228 196 176 Z"/>
+    <path d="M364 168 C 414 248 404 348 324 388 L 292 320 C 344 292 354 228 316 176 Z"/>
+    <ellipse cx="256" cy="340" rx="44" ry="34" fill="#7b9dff" stroke="none"/>
+  </g>
+</svg>

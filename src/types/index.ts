@@ -16,7 +16,8 @@ export interface AgentConfig {
 export interface ChannelBinding {
   agentId: string
   accountId: string
-  platform: 'feishu' | 'wechat' | 'qq' | 'dingtalk'
+  /** OpenClaw 支持的渠道标识 */
+  platform: 'whatsapp' | 'telegram' | 'discord' | 'slack' | 'signal' | 'imessage' | 'googlechat' | 'mattermost' | 'msteams' | string
   [key: string]: unknown
 }
 
@@ -30,7 +31,7 @@ export interface GatewayConfig {
 
 export interface AccountConfig {
   id: string
-  platform: 'feishu' | 'wechat' | 'qq' | 'dingtalk'
+  platform: 'whatsapp' | 'telegram' | 'discord' | 'slack' | 'signal' | 'imessage' | 'googlechat' | 'mattermost' | 'msteams' | string
   type?: string
   [key: string]: unknown
 }
@@ -39,11 +40,29 @@ export interface AccountConfig {
 
 export interface TClawSettings {
   clawDir: string
+  /** OpenClaw Gateway 根地址（默认 http://localhost:18789） */
   gatewayUrl: string
+  /** Gateway Bearer Token（`gateway.auth.token` 或 `OPENCLAW_GATEWAY_TOKEN`），留空则不发送认证头 */
+  gatewayToken: string
   autoStart: boolean
   logPath: string
-  /** 会话列表轮询路径，依 Gateway 实际路由调整 */
+  /** 会话/状态查询路径（默认 /v1/models） */
   sessionsApiPath: string
+  /** 聊天 POST 路径（默认 /v1/chat/completions，兼容 OpenAI 格式） */
+  chatApiPath: string
+  /** 可选：发往 Gateway 的 Agent 目标（如 `openclaw/default`、`openclaw/<agentId>`） */
+  chatAgentId: string
+}
+
+/**
+ * 单条聊天消息（本地展示用）。
+ */
+export interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant' | 'system'
+  content: string
+  at: string
+  error?: boolean
 }
 
 /**
@@ -68,10 +87,16 @@ export interface TClawAPI {
     setDir: (dir: string) => Promise<{ ok: boolean }>
     getAgents: () => Promise<AgentConfig[]>
     saveAgent: (agentId: string, data: AgentConfig) => Promise<{ ok: boolean; error?: string }>
+    /** @deprecated 与 getGateway 功能重复，推荐使用 getGateway */
     getChannels: () => Promise<GatewayConfig>
+    /** @deprecated 与 saveGateway 功能重复，推荐使用 saveGateway */
     saveChannels: (data: GatewayConfig) => Promise<{ ok: boolean; error?: string }>
     getGateway: () => Promise<GatewayConfig>
     saveGateway: (data: GatewayConfig) => Promise<{ ok: boolean; error?: string }>
+    /** 获取完整 openclaw.json 配置 */
+    getOpenClawConfig: () => Promise<Record<string, unknown> | null>
+    /** 深度合并补丁到 openclaw.json（Gateway 自动热重载） */
+    patchConfig: (patch: Record<string, unknown>) => Promise<{ ok: boolean; error?: string }>
   }
   log: {
     watch: (logPath: string) => Promise<{ ok: boolean; error?: string }>
@@ -80,6 +105,11 @@ export interface TClawAPI {
   api: {
     request: (method: string, path: string, body?: unknown) => Promise<unknown>
     setBase: (baseUrl: string) => Promise<void>
+    setToken: (token: string) => Promise<void>
+  }
+  channelLogin: {
+    start: (channelKey: string, account?: string) => Promise<{ ok: boolean; error?: string }>
+    stop: () => Promise<{ ok: boolean }>
   }
   dialog: {
     openDir: () => Promise<string | null>
@@ -89,6 +119,10 @@ export interface TClawAPI {
     log: (cb: (msg: string) => void) => () => void
     clawStatus: (cb: (status: ClawStatus) => void) => () => void
     configChanged: (cb: (path: string) => void) => () => void
+    channelLoginQR: (cb: (data: { raw: string; dataUrl: string | null }) => void) => () => void
+    channelLoginStatus: (cb: (data: { status: string; channel: string; error?: string }) => void) => () => void
+    channelLoginLog: (cb: (msg: string) => void) => () => void
+    channelLoginTerminalQR: (cb: (art: string) => void) => () => void
   }
 }
 

@@ -23,7 +23,13 @@ const router = createRouter({
       path: '/sessions',
       name: 'Sessions',
       component: () => import('@/views/SessionMonitor.vue'),
-      meta: { title: '会话监控', icon: 'ChatDotRound' }
+      meta: { title: 'Gateway 状态', icon: 'Monitor' }
+    },
+    {
+      path: '/chat',
+      name: 'Chat',
+      component: () => import('@/views/ChatPanel.vue'),
+      meta: { title: '聊天', icon: 'ChatLineRound' }
     },
     {
       path: '/logs',
@@ -36,6 +42,12 @@ const router = createRouter({
       name: 'Settings',
       component: () => import('@/views/Settings.vue'),
       meta: { title: '设置', icon: 'Setting' }
+    },
+    {
+      path: '/docs',
+      name: 'Manual',
+      component: () => import('@/views/ManualView.vue'),
+      meta: { title: '使用手册', icon: 'Reading' }
     }
   ]
 })

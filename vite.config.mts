@@ -1,33 +1,36 @@
 import { defineConfig } from 'vite'
+import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import electron from 'vite-plugin-electron'
 import renderer from 'vite-plugin-electron-renderer'
-import { resolve } from 'path'
+import { resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   plugins: [
+    tailwindcss(),
     vue(),
     electron([
       {
-        // Main process
         entry: 'electron/main.ts',
         vite: {
           build: {
             outDir: 'dist-electron',
             rollupOptions: {
-              external: ['chokidar', 'node-pty', 'ws', 'js-yaml']
+              external: ['chokidar', 'js-yaml', 'qrcode']
             }
           }
         }
       },
       {
-        // Preload script
         entry: 'electron/preload.ts',
         vite: {
           build: {
             outDir: 'dist-electron',
             rollupOptions: {
-              external: ['chokidar', 'node-pty', 'ws', 'js-yaml']
+              external: ['chokidar', 'js-yaml', 'qrcode']
             }
           }
         },

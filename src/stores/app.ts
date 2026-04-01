@@ -4,17 +4,20 @@ import type { ClawStatus, TClawSettings } from '@/types'
 
 const DEFAULT_SETTINGS: TClawSettings = {
   clawDir: '',
-  gatewayUrl: 'http://localhost:3000',
+  gatewayUrl: 'http://localhost:18789',
+  gatewayToken: '',
   autoStart: false,
   logPath: '',
-  sessionsApiPath: '/api/sessions'
+  sessionsApiPath: '/v1/models',
+  chatApiPath: '/v1/chat/completions',
+  chatAgentId: ''
 }
 
 export const useAppStore = defineStore('app', () => {
   const clawStatus = ref<ClawStatus>('stopped')
   const settings = ref<TClawSettings>({ ...DEFAULT_SETTINGS })
   const logLines = ref<string[]>([])
-  const configDirSet = ref(false)
+
 
   const isRunning = computed(() => clawStatus.value === 'running')
   const statusColor = computed(() => ({
@@ -51,7 +54,7 @@ export const useAppStore = defineStore('app', () => {
   }
 
   return {
-    clawStatus, settings, logLines, configDirSet,
+    clawStatus, settings, logLines,
     isRunning, statusColor,
     setStatus, appendLog, clearLogs, loadSettings, saveSettings
   }

@@ -1,65 +1,75 @@
 <template>
-  <div class="app-layout">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-logo">
-        <span class="logo-icon">🦀</span>
-        <span class="logo-text">TClaw</span>
+  <div class="tclaw-app flex h-screen min-h-0">
+    <aside
+      class="flex w-60 min-w-60 flex-col border-r border-tclaw-border bg-gradient-to-b from-[#0e1020] via-[#0a0c18] to-[#080a14] shadow-[4px_0_24px_rgba(0,0,0,0.25)]"
+    >
+      <div class="flex items-center gap-3 border-b border-tclaw-border px-[18px] pb-[18px] pt-[22px]">
+        <div
+          class="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] border border-tclaw-border-strong bg-gradient-to-br from-tclaw-accent/25 to-[rgba(30,36,80,0.9)] shadow-[0_4px_16px_rgba(123,157,255,0.12)]"
+          aria-hidden="true"
+        >
+          <span class="text-2xl leading-none">🦀</span>
+        </div>
+        <div class="flex min-w-0 flex-col gap-0.5">
+          <span
+            class="bg-gradient-to-r from-[#c5d4ff] from-0% via-tclaw-accent via-55% to-[#6b8cff] to-100% bg-clip-text text-[1.15rem] font-extrabold tracking-[0.06em] text-transparent"
+          >
+            TClaw
+          </span>
+          <span class="text-[11px] tracking-wide text-tclaw-text-muted">OpenClaw 控制台</span>
+        </div>
       </div>
 
-      <nav class="sidebar-nav">
+      <nav class="flex flex-1 flex-col gap-1 overflow-y-auto px-2.5 py-3.5" aria-label="主导航">
         <router-link
           v-for="route in navRoutes"
           :key="route.path"
           :to="route.path"
-          class="nav-item"
-          active-class="nav-item--active"
+          class="tclaw-nav-link"
+          active-class="tclaw-nav-link--active"
         >
-          <el-icon><component :is="route.meta?.icon" /></el-icon>
-          <span>{{ route.meta?.title }}</span>
+          <el-icon class="size-[18px] shrink-0">
+            <component :is="route.meta?.icon" />
+          </el-icon>
+          <span class="min-w-0 flex-1">{{ route.meta?.title }}</span>
         </router-link>
       </nav>
 
-      <!-- Status indicator -->
-      <div class="sidebar-status">
-        <div class="status-dot" :style="{ background: appStore.statusColor }" />
-        <span class="status-label">{{ statusLabel }}</span>
-        <div class="status-actions">
+      <div class="flex flex-col gap-2.5 border-t border-tclaw-border px-3 pb-[18px] pt-3.5">
+        <div class="flex items-center gap-2 text-xs text-tclaw-text-muted">
+          <span
+            class="size-2 shrink-0 rounded-full shadow-[0_0_0_3px_rgba(255,255,255,0.06)]"
+            :style="{ background: appStore.statusColor }"
+          />
+          <span>{{ statusLabel }}</span>
+        </div>
+        <div class="flex flex-wrap gap-1.5">
           <el-button
             v-if="!appStore.isRunning"
             size="small"
             type="success"
+            round
             :loading="appStore.clawStatus === 'starting'"
             @click="startClaw"
           >
             启动
           </el-button>
-          <el-button
-            v-else
-            size="small"
-            type="danger"
-            @click="stopClaw"
-          >
-            停止
-          </el-button>
-          <el-button
-            v-if="appStore.isRunning"
-            size="small"
-            @click="restartClaw"
-          >
-            重启
-          </el-button>
+          <el-button v-else size="small" type="danger" round @click="stopClaw">停止</el-button>
+          <el-button v-if="appStore.isRunning" size="small" round @click="restartClaw">重启</el-button>
         </div>
       </div>
     </aside>
 
-    <!-- Main content -->
-    <main class="main-content">
-      <router-view v-slot="{ Component }">
-        <keep-alive>
-          <component :is="Component" />
-        </keep-alive>
-      </router-view>
+    <main
+      class="flex min-h-0 min-w-0 flex-1 flex-col bg-[radial-gradient(ellipse_120%_80%_at_50%_-20%,rgba(123,157,255,0.12),transparent_55%),linear-gradient(180deg,var(--color-tclaw-bg)_0%,var(--color-tclaw-bg-deep)_100%)]"
+    >
+      <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <router-view v-slot="{ Component }">
+          <keep-alive>
+            <component :is="Component" />
+          </keep-alive>
+        </router-view>
+      </div>
     </main>
   </div>
 </template>
@@ -79,14 +89,14 @@ const navRoutes = computed(() =>
 
 const statusLabel = computed(() => ({
   stopped: '未运行',
-  starting: '启动中...',
+  starting: '启动中…',
   running: '运行中',
   error: '异常'
 }[appStore.clawStatus]))
 
-// Listen for IPC events
 let unsubLog: (() => void) | null = null
 let unsubStatus: (() => void) | null = null
+let unsubConfig: (() => void) | null = null
 
 onMounted(() => {
   appStore.loadSettings()
@@ -96,6 +106,9 @@ onMounted(() => {
   }
   if (appStore.settings.gatewayUrl) {
     void window.tclaw.api.setBase(appStore.settings.gatewayUrl)
+  }
+  if (appStore.settings.gatewayToken) {
+    void window.tclaw.api.setToken(appStore.settings.gatewayToken)
   }
 
   if (appStore.settings.autoStart && appStore.settings.clawDir) {
@@ -109,11 +122,16 @@ onMounted(() => {
   unsubStatus = window.tclaw.on.clawStatus((status) => {
     appStore.setStatus(status)
   })
+
+  unsubConfig = window.tclaw.on.configChanged((filePath) => {
+    appStore.appendLog(`[CONFIG] 文件变更：${filePath}`)
+  })
 })
 
 onUnmounted(() => {
   unsubLog?.()
   unsubStatus?.()
+  unsubConfig?.()
 })
 
 async function startClaw() {
@@ -135,110 +153,3 @@ async function restartClaw() {
   if (!res.ok) ElMessage.error(`重启失败: ${res.error}`)
 }
 </script>
-
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  background: #0d0d1a;
-  color: #e0e0e0;
-  font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  overflow: hidden;
-  height: 100vh;
-}
-
-#app { height: 100vh; }
-
-.app-layout {
-  display: flex;
-  height: 100vh;
-}
-
-/* ── Sidebar ─────────────────────────────────────── */
-.sidebar {
-  width: 200px;
-  min-width: 200px;
-  background: #12122a;
-  display: flex;
-  flex-direction: column;
-  border-right: 1px solid #1e1e3a;
-}
-
-.sidebar-logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 20px 16px 16px;
-  border-bottom: 1px solid #1e1e3a;
-}
-
-.logo-icon { font-size: 22px; }
-.logo-text {
-  font-size: 18px;
-  font-weight: 700;
-  color: #7b9dff;
-  letter-spacing: 1px;
-}
-
-.sidebar-nav {
-  flex: 1;
-  padding: 12px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border-radius: 6px;
-  color: #888;
-  text-decoration: none;
-  font-size: 13px;
-  transition: all 0.15s;
-}
-
-.nav-item:hover { background: #1a1a38; color: #ccc; }
-.nav-item--active { background: #1e2450; color: #7b9dff; }
-.nav-item .el-icon { font-size: 16px; }
-
-/* ── Status bar ──────────────────────────────────── */
-.sidebar-status {
-  padding: 14px 12px;
-  border-top: 1px solid #1e1e3a;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.status-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 6px;
-}
-
-.status-label {
-  font-size: 12px;
-  color: #aaa;
-}
-
-.status-actions {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-/* ── Main ────────────────────────────────────────── */
-.main-content {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ── Element Plus dark overrides ─────────────────── */
-.el-button { border-radius: 5px; }
-</style>

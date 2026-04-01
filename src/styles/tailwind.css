@@ -1,0 +1,104 @@
+/**
+ * Tailwind CSS v4（@see https://tailwindcss.com/docs/installation/using-vite）
+ * 设计令牌在 @theme 中声明，与 Element Plus 覆盖共用 :root 别名。
+ */
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+@theme {
+  --color-tclaw-bg-deep: #080810;
+  --color-tclaw-bg: #0c0e18;
+  --color-tclaw-surface: #12151f;
+  --color-tclaw-surface-elevated: #181c28;
+  --color-tclaw-border: rgba(123, 157, 255, 0.14);
+  --color-tclaw-border-strong: rgba(123, 157, 255, 0.28);
+  --color-tclaw-accent: #7b9dff;
+  --color-tclaw-accent-hover: #9bb4ff;
+  --color-tclaw-accent-muted: rgba(123, 157, 255, 0.12);
+  --color-tclaw-text: #e8eaf0;
+  --color-tclaw-text-muted: #8f96ae;
+  --color-tclaw-success: #67c23a;
+  --color-tclaw-warning: #e6a23c;
+  --color-tclaw-danger: #f56c6c;
+
+  --font-sans:
+    'DM Sans', 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+}
+
+@layer base {
+  html.dark {
+    color-scheme: dark;
+  }
+
+  :root {
+    --tclaw-bg-deep: #080810;
+    --tclaw-bg: #0c0e18;
+    --tclaw-surface: #12151f;
+    --tclaw-surface-elevated: #181c28;
+    --tclaw-border: rgba(123, 157, 255, 0.14);
+    --tclaw-border-strong: rgba(123, 157, 255, 0.28);
+    --tclaw-accent: #7b9dff;
+    --tclaw-accent-hover: #9bb4ff;
+    --tclaw-accent-muted: rgba(123, 157, 255, 0.12);
+    --tclaw-text: #e8eaf0;
+    --tclaw-text-muted: #8f96ae;
+    --tclaw-success: #67c23a;
+    --tclaw-warning: #e6a23c;
+    --tclaw-danger: #f56c6c;
+    --tclaw-radius-sm: 8px;
+    --tclaw-radius-md: 12px;
+    --tclaw-radius-lg: 16px;
+    --tclaw-shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.35);
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply m-0 h-screen overflow-hidden bg-tclaw-bg-deep font-sans text-tclaw-text antialiased;
+  }
+
+  #app {
+    @apply h-screen;
+  }
+}
+
+@layer components {
+  .tclaw-page {
+    @apply flex h-full min-h-0 flex-col overflow-hidden px-7 pb-6 pt-5;
+  }
+
+  .tclaw-page--scroll {
+    @apply overflow-y-auto;
+  }
+
+  .tclaw-panel {
+    @apply rounded-xl border border-tclaw-border bg-tclaw-surface shadow-[0_2px_12px_rgba(0,0,0,0.2)];
+  }
+
+  .tclaw-hint {
+    @apply mt-1.5 text-xs leading-relaxed text-tclaw-text-muted;
+  }
+
+  .tclaw-hint code {
+    @apply rounded px-1.5 py-0.5 text-[11px] text-tclaw-accent bg-tclaw-accent-muted;
+  }
+
+  /** 侧栏导航链接（与 router-link-active 配合） */
+  .tclaw-nav-link {
+    @apply flex items-center gap-2.5 rounded-[10px] border border-transparent px-3 py-2.5 text-[13px] font-medium text-tclaw-text-muted no-underline transition-colors duration-150;
+  }
+
+  .tclaw-nav-link:hover {
+    @apply bg-tclaw-accent/10 text-tclaw-text;
+  }
+
+  .tclaw-nav-link--active {
+    @apply border-tclaw-border-strong bg-gradient-to-r from-tclaw-accent/20 to-tclaw-accent/5 text-tclaw-accent;
+    box-shadow: inset 3px 0 0 0 var(--color-tclaw-accent);
+  }
+}

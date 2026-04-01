@@ -1,13 +1,21 @@
 <template>
-  <div class="page">
-    <div class="page-header">
-      <h2>Agent 管理</h2>
-      <el-button type="primary" size="small" :loading="agents.loading" @click="refresh">
-        <el-icon><Refresh /></el-icon> 刷新
-      </el-button>
-    </div>
+  <div class="tclaw-page tclaw-page--scroll">
+    <PageHeader
+      title="Agent 管理"
+      description="读取 OpenClaw 目录下 agents/*.yaml，编辑后保存到对应文件。"
+    >
+      <template #actions>
+        <el-button size="small" @click="openCreate">
+          <el-icon><Plus /></el-icon> 新建
+        </el-button>
+        <el-button type="primary" size="small" :loading="agents.loading" @click="refresh">
+          <el-icon><Refresh /></el-icon> 刷新
+        </el-button>
+      </template>
+    </PageHeader>
 
-    <el-table :data="agents.list" style="width: 100%" empty-text="暂无 Agent，请先配置 OpenClaw 目录">
+    <div class="table-wrap">
+      <el-table :data="agents.list" class="agent-table" style="width: 100%" empty-text="暂无 Agent，请先配置 OpenClaw 目录">
       <el-table-column prop="name" label="名称" />
       <el-table-column prop="id" label="ID" />
       <el-table-column prop="model" label="模型" />
@@ -18,8 +26,9 @@
         </template>
       </el-table-column>
     </el-table>
+    </div>
 
-    <el-dialog v-model="dialogVisible" title="编辑 Agent" width="560px" destroy-on-close @closed="resetForm">
+    <el-dialog v-model="dialogVisible" :title="isCreateMode ? '新建 Agent' : '编辑 Agent'" width="560px" destroy-on-close @closed="resetForm">
       <el-form label-width="88px">
         <el-form-item label="ID">
           <el-input v-model="form.id" placeholder="与文件名一致，不含扩展名" />
@@ -44,7 +53,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { Refresh } from '@element-plus/icons-vue'
+import { Refresh, Plus } from '@element-plus/icons-vue'
+import PageHeader from '@/components/PageHeader.vue'
 import type { AgentConfig } from '@/types'
 import { useAgentsStore } from '@/stores/agents'
 import { ElMessage } from 'element-plus'
@@ -61,6 +71,7 @@ const form = ref<AgentConfig>({
 })
 
 let sourceRow: AgentConfig | null = null
+let isCreateMode = false
 
 /**
  * 从表格行解析用于保存的 agentId（优先 id，其次 yaml 文件名）。
@@ -82,10 +93,21 @@ async function refresh() {
 }
 
 /**
+ * 打开新建 Agent 对话框（表单清空）。
+ */
+function openCreate() {
+  isCreateMode = true
+  sourceRow = null
+  form.value = { name: '', id: '', model: '', description: '' }
+  dialogVisible.value = true
+}
+
+/**
  * 打开编辑对话框并填充表单。
  * @param row - 当前行
  */
 function openEdit(row: AgentConfig) {
+  isCreateMode = false
   sourceRow = { ...row }
   form.value = {
     ...row,
@@ -102,6 +124,7 @@ function openEdit(row: AgentConfig) {
  */
 function resetForm() {
   sourceRow = null
+  isCreateMode = false
   form.value = { name: '', id: '', model: '', description: '' }
 }
 
@@ -141,7 +164,13 @@ onMounted(refresh)
 </script>
 
 <style scoped>
-.page { padding: 24px; height: 100%; overflow-y: auto; }
-.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.page-header h2 { font-size: 18px; color: #e0e0e0; }
+.table-wrap {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.agent-table {
+  min-height: 260px;
+}
 </style>

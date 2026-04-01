@@ -1,0 +1,48 @@
+/**
+ * Element Plus 与 TClaw 深色主题的衔接（非 Tailwind 组件内部结构需保留选择器）。
+ */
+.tclaw-app .el-table {
+  --el-table-bg-color: var(--tclaw-surface);
+  --el-table-tr-bg-color: var(--tclaw-surface);
+  --el-table-header-bg-color: var(--tclaw-surface-elevated);
+  --el-table-row-hover-bg-color: var(--tclaw-accent-muted);
+  --el-table-border-color: var(--tclaw-border);
+  border-radius: var(--tclaw-radius-md);
+  overflow: hidden;
+}
+
+.tclaw-app .el-table th.el-table__cell {
+  font-weight: 600;
+  color: var(--tclaw-text-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tclaw-app .el-input__wrapper,
+.tclaw-app .el-textarea__inner {
+  background-color: var(--tclaw-surface) !important;
+  box-shadow: 0 0 0 1px var(--tclaw-border) inset !important;
+}
+
+.tclaw-app .el-input__wrapper:hover,
+.tclaw-app .el-textarea__inner:hover {
+  box-shadow: 0 0 0 1px var(--tclaw-border-strong) inset !important;
+}
+
+.tclaw-app .el-button {
+  font-weight: 500;
+  border-radius: var(--tclaw-radius-sm);
+}
+
+.tclaw-app .el-dialog {
+  border-radius: var(--tclaw-radius-lg);
+  overflow: hidden;
+  background: linear-gradient(165deg, var(--tclaw-surface-elevated) 0%, var(--tclaw-surface) 100%);
+  border: 1px solid var(--tclaw-border);
+  box-shadow: var(--tclaw-shadow-soft);
+}
+
+.tclaw-app .el-overlay-dialog {
+  backdrop-filter: blur(6px);
+}

@@ -1,34 +1,41 @@
 <template>
-  <div class="page">
-    <div class="page-header">
-      <h2>会话监控</h2>
-      <div class="actions">
+  <div class="tclaw-page session-page">
+    <PageHeader
+      title="Gateway 状态"
+      description="轮询 Gateway 的 /v1/models 端点以检查服务状态与可用 Agent 列表。"
+    >
+      <template #actions>
         <el-button v-if="!polling" type="primary" size="small" @click="start">开始轮询</el-button>
         <el-button v-else type="warning" size="small" @click="stop">停止</el-button>
         <el-button size="small" @click="sessions.clearEvents">清空显示</el-button>
-      </div>
+      </template>
+    </PageHeader>
+
+    <div class="meta-bar tclaw-panel">
+      <span>路径：<code>{{ pathLabel }}</code></span>
+      <span v-if="sessions.lastError" class="meta-bar__err">{{ sessions.lastError }}</span>
+      <span v-if="gatewayOk" class="meta-bar__ok">Gateway 正常</span>
     </div>
 
-    <div class="meta">
-      <span>路径：{{ pathLabel }}</span>
-      <span v-if="sessions.lastError" class="err">{{ sessions.lastError }}</span>
-    </div>
-
-    <el-table
-      v-loading="sessions.loading"
-      :data="tableRows"
-      style="width: 100%"
-      height="calc(100vh - 200px)"
-      empty-text="暂无数据，请确认 Gateway 已启动且路径正确"
-    >
+    <div class="session-table-wrap">
+      <el-table
+        v-loading="sessions.loading"
+        :data="tableRows"
+        class="session-table"
+        style="width: 100%"
+        height="100%"
+        empty-text="暂无数据，请确认 Gateway 已启动、Auth Token 正确、且 OpenAI 兼容端点已启用"
+      >
       <el-table-column prop="at" label="时间" width="200" />
       <el-table-column prop="preview" label="内容摘要" show-overflow-tooltip />
     </el-table>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import PageHeader from '@/components/PageHeader.vue'
 import { useAppStore } from '@/stores/app'
 import { useSessionsStore } from '@/stores/sessions'
 import type { SessionEventItem } from '@/types'
@@ -36,13 +43,16 @@ import type { SessionEventItem } from '@/types'
 const appStore = useAppStore()
 const sessions = useSessionsStore()
 
-const POLL_MS = 4000
+const POLL_MS = 5000
 
 const pollActive = ref(false)
 
-const pathLabel = computed(() => appStore.settings.sessionsApiPath || '/api/sessions')
+const pathLabel = computed(() => appStore.settings.sessionsApiPath || '/v1/models')
 
 const polling = computed(() => pollActive.value)
+
+/** Gateway 最近一次请求是否成功 */
+const gatewayOk = computed(() => !sessions.lastError && sessions.events.length > 0)
 
 /**
  * 将事件压缩为表格行展示。
@@ -59,7 +69,7 @@ const tableRows = computed(() =>
  */
 function start() {
   appStore.loadSettings()
-  const p = appStore.settings.sessionsApiPath || '/api/sessions'
+  const p = appStore.settings.sessionsApiPath || '/v1/models'
   sessions.startPolling(p, POLL_MS)
   pollActive.value = true
 }
@@ -82,10 +92,46 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.page { padding: 24px; height: 100%; display: flex; flex-direction: column; }
-.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.page-header h2 { font-size: 18px; color: #e0e0e0; }
-.actions { display: flex; gap: 8px; }
-.meta { font-size: 12px; color: #888; margin-bottom: 8px; display: flex; gap: 16px; }
-.err { color: #f56c6c; }
+.session-page {
+  min-height: 0;
+}
+
+.meta-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--tclaw-text-muted);
+}
+
+.meta-bar code {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--tclaw-accent-muted);
+  color: var(--tclaw-accent);
+}
+
+.meta-bar__err {
+  color: var(--tclaw-danger);
+}
+
+.meta-bar__ok {
+  color: var(--tclaw-success);
+  font-weight: 600;
+}
+
+.session-table-wrap {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.session-table {
+  border-radius: var(--tclaw-radius-md);
+  overflow: hidden;
+}
 </style>

@@ -1,8 +1,10 @@
 <template>
-  <div class="page">
-    <div class="page-header">
-      <h2>日志与告警</h2>
-      <div class="actions">
+  <div class="tclaw-page log-page">
+    <PageHeader
+      title="日志与告警"
+      description="查看进程输出；可订阅外部日志文件并设置过滤与告警关键字。"
+    >
+      <template #actions>
         <el-input
           v-model="keyword"
           size="small"
@@ -15,16 +17,16 @@
           v-model="alertRule"
           size="small"
           clearable
-          placeholder="告警关键字（高亮红）"
+          placeholder="告警关键字（高亮）"
           style="width: 200px"
         />
         <el-button size="small" @click="useFileWatch">订阅文件日志</el-button>
         <el-button size="small" @click="stopFileWatch">取消订阅</el-button>
         <el-button size="small" @click="clear">清空</el-button>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
-    <div ref="logBox" class="log-box">
+    <div ref="logBox" class="log-box tclaw-panel">
       <div
         v-for="(line, i) in displayLines"
         :key="i"
@@ -37,6 +39,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
+import PageHeader from '@/components/PageHeader.vue'
 import { useAppStore } from '@/stores/app'
 import { ElMessage } from 'element-plus'
 
@@ -117,22 +120,22 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.page { padding: 24px; height: 100%; display: flex; flex-direction: column; }
-.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
-.page-header h2 { font-size: 18px; color: #e0e0e0; }
-.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.log-page {
+  min-height: 0;
+}
+
 .log-box {
   flex: 1;
+  min-height: 0;
   overflow: auto;
-  background: #0a0a14;
-  border: 1px solid #1e1e3a;
-  border-radius: 6px;
-  padding: 12px;
+  padding: 14px 16px;
   font-family: ui-monospace, 'Cascadia Code', monospace;
   font-size: 12px;
-  line-height: 1.5;
-  color: #c8c8d0;
+  line-height: 1.55;
+  color: var(--tclaw-text-muted);
+  background: var(--tclaw-bg-deep);
 }
+
 .log-line { white-space: pre-wrap; word-break: break-all; }
-.log-line.alert { color: #f56c6c; font-weight: 600; }
+.log-line.alert { color: var(--tclaw-danger); font-weight: 600; }
 </style>
